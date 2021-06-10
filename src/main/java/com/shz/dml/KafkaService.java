@@ -1,4 +1,4 @@
-package com.shz;
+package com.shz.dml;
 
 import org.apache.kafka.clients.admin.*;
 
@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutionException;
 
 public class KafkaService implements AutoCloseable {
 
-    String broker_servers = "node01:9092,node02:9092,node03:9092";
+    public static String broker_servers = "node01:9092,node02:9092,node03:9092";
     KafkaAdminClient adminClient;
 
     public KafkaService(){

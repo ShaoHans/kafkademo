@@ -1,10 +1,7 @@
-package com.shz;
+package com.shz.dml;
 
 import org.apache.kafka.clients.admin.*;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 public class TopicDML {
