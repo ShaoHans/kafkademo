@@ -6,6 +6,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -25,10 +26,10 @@ public class ManualCommitOffsetConsumerSub {
         // 由消费者手动向kafka提交消费的偏移量
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);        //默认值：true
 
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
         // 订阅topics，由Kafka协调消费者与分区的对应关系。当组内的某个消费者宕机后，kafka会自动重新分配消费者与分区对应关系
-        consumer.subscribe(Pattern.compile("^topic.*"));
+        consumer.subscribe(Arrays.asList("topic03"));
 
         // 遍历消息队列
         while (true) {

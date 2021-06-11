@@ -18,7 +18,7 @@ public class AckProducer {
 
         // 设置ack应答模式
         props.put(ProducerConfig.ACKS_CONFIG, "all");
-        // 设置retry重试策略
+        // 设置retry重试策略，会导致消息在kafka集群中保存多份
         props.put(ProducerConfig.RETRIES_CONFIG, 3); // 重试3次
         props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 1); //为了测试，应答超时时间设为1ms
 

@@ -9,8 +9,8 @@ public class TopicDML {
 
         KafkaService kafkaService = new KafkaService();
         //kafkaService.deleteTopic("topic01");
-        TopicDescription topic03 = kafkaService.createIfNotExist("topic03");
-        System.out.println(topic03);
+        TopicDescription td = kafkaService.createIfNotExist("topicDown");
+        System.out.println(td);
 
         Set<String> topics = kafkaService.listTopics();
         topics.forEach(t-> System.out.println(t));
