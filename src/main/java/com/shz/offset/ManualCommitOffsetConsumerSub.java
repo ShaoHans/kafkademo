@@ -33,24 +33,33 @@ public class ManualCommitOffsetConsumerSub {
 
         // 遍历消息队列
         while (true) {
-            ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
+            // 一次拉取多个分区的n多条消息
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(0));
+            if (records.isEmpty()) {
+                continue;
+            }
+            /**
+             * 首先要明白一个问题：kafka是以分区的粒度来管理消费者的offset
+             * 可以有以下三种方式提交offset
+             * 1.按记录，每消费成功一条消息，就向kafka提交offset，准确率高，但性能不好（使用单线程）
+             * 2.按分区，消费完分区内的所有消息后，再向kafka提交offset（可以单线程，也可以多线程）
+             * 3.按批次，消费完所有分区的所有消息后，再向kafka提交offset（使用单线程）
+             */
             // 记录消费者分区偏移量信息
             Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
-            if (!records.isEmpty()) {
-                records.forEach(r -> {
-                    offsets.put(new TopicPartition(r.topic(), r.partition()), new OffsetAndMetadata(r.offset() + 1));
-                    System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value());
+            records.forEach(r -> {
+                offsets.put(new TopicPartition(r.topic(), r.partition()), new OffsetAndMetadata(r.offset() + 1));
+                System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value());
 
-                    // 消费者向kafka服务器手动提交偏移量+1
-                    // 你可以注释或者反注释以下代码进行测试
-                    consumer.commitAsync(offsets, new OffsetCommitCallback() {
-                        @Override
-                        public void onComplete(Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) {
-                            System.out.println("offsets:" + offsets + "\t exception=" + exception);
-                        }
-                    });
+                // 消费者向kafka服务器手动提交偏移量+1
+                // 你可以注释或者反注释以下代码进行测试
+                consumer.commitAsync(offsets, new OffsetCommitCallback() {
+                    @Override
+                    public void onComplete(Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) {
+                        System.out.println("offsets:" + offsets + "\t exception=" + exception);
+                    }
                 });
-            }
+            });
         }
     }
 }
