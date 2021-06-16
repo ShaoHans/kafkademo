@@ -6,11 +6,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Pattern;
+import java.util.*;
 
 public class ManualCommitOffsetConsumerSub {
     /*
@@ -45,21 +41,62 @@ public class ManualCommitOffsetConsumerSub {
              * 2.按分区，消费完分区内的所有消息后，再向kafka提交offset（可以单线程，也可以多线程）
              * 3.按批次，消费完所有分区的所有消息后，再向kafka提交offset（使用单线程）
              */
-            // 记录消费者分区偏移量信息
-            Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
-            records.forEach(r -> {
-                offsets.put(new TopicPartition(r.topic(), r.partition()), new OffsetAndMetadata(r.offset() + 1));
-                System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value());
 
-                // 消费者向kafka服务器手动提交偏移量+1
-                // 你可以注释或者反注释以下代码进行测试
-                consumer.commitAsync(offsets, new OffsetCommitCallback() {
-                    @Override
-                    public void onComplete(Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) {
-                        System.out.println("offsets:" + offsets + "\t exception=" + exception);
-                    }
-                });
-            });
+            commitBySingle(consumer, records);
+            //commitByPartition(consumer,records);
+            //commitByBatch(consumer,records);
         }
+    }
+
+    /**
+     * 按记录：每处理完一条消息就立即向broker提交offset
+     * @param consumer
+     * @param records
+     */
+    public static void commitBySingle(KafkaConsumer<String, String> consumer, ConsumerRecords<String, String> records) {
+        // 记录消费者分区偏移量信息
+        Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
+        records.forEach(r -> {
+            offsets.put(new TopicPartition(r.topic(), r.partition()), new OffsetAndMetadata(r.offset() + 1));
+            System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value());
+
+            // 消费者向kafka服务器手动提交偏移量+1
+            // 你可以注释或者反注释以下代码进行测试
+            consumer.commitAsync(offsets, new MyOffsetCommitCallback());
+        });
+    }
+
+    /**
+     * 按分区：每处理完一个分区的所有消息就向broker提交offset
+     * @param consumer
+     * @param records
+     */
+    public static void commitByPartition(KafkaConsumer<String, String> consumer, ConsumerRecords<String, String> records) {
+        // 获取消息记录的所有分区
+        Set<TopicPartition> partitions = records.partitions();
+        // 循环遍历分区，处理完分区的所有消息后，提交分区最后一条消息的offset+1
+        for (TopicPartition partition : partitions) {
+            List<ConsumerRecord<String, String>> pRrds = records.records(partition);
+            pRrds.forEach(r -> {
+                System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value());
+            });
+
+            Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
+            long lastOffset = pRrds.get(pRrds.size() - 1).offset();
+            offsets.put(partition, new OffsetAndMetadata(lastOffset + 1));
+            consumer.commitAsync(offsets, new MyOffsetCommitCallback());
+        }
+    }
+
+    /**
+     * 按批次：每处理完一个批次的所有消息就向broker提交offset
+     * @param consumer
+     * @param records
+     */
+    public static void commitByBatch(KafkaConsumer<String, String> consumer, ConsumerRecords<String, String> records) {
+        records.forEach(r -> {
+            System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value());
+        });
+        consumer.commitAsync(new MyOffsetCommitCallback());
     }
 }
