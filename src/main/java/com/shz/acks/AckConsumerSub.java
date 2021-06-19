@@ -30,7 +30,7 @@ public class AckConsumerSub {
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
             if (!records.isEmpty()) {
-                records.forEach(r -> System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value()));
+                records.forEach(r -> System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value()+ ",offset=" + r.offset()));
             }
         }
     }

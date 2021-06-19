@@ -18,16 +18,19 @@ public class AckProducer {
 
         // 设置ack应答模式
         props.put(ProducerConfig.ACKS_CONFIG, "all");
+        //props.put(ProducerConfig.ACKS_CONFIG, "0");
         // 设置retry重试策略，会导致消息在kafka集群中保存多份
-        props.put(ProducerConfig.RETRIES_CONFIG, 3); // 重试3次
-        props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 1); //为了测试，应答超时时间设为1ms
+        //props.put(ProducerConfig.RETRIES_CONFIG, 3); // 重试3次
+        //props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 1); //为了测试，应答超时时间设为1ms
 
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(props);
 
-        ProducerRecord<String, String> record = new ProducerRecord<>("topic03", "ack", "test ack");
-        producer.flush();
-        producer.send(record);
+       while (true){
+           ProducerRecord<String, String> record = new ProducerRecord<>("topic03", "ack", "test ack");
+           //producer.flush();
+           producer.send(record);
+       }
 
-        producer.close();
+        //producer.close();
     }
 }

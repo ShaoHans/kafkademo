@@ -70,7 +70,7 @@ public class OffsetConsumerSub {
                 // 每次poll的时候是从多个分区同时拉取
                 Set<TopicPartition> partitions = records.partitions();
                 records.forEach(r -> {
-                    System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value());
+                    System.out.println("topic=" + r.topic() + ",partition=" + r.partition() + ",key=" + r.key() + ",value=" + r.value()+ ",offset=" + r.offset());
                 });
             }
         }

@@ -35,7 +35,7 @@ public class KafkaService implements AutoCloseable {
     // 创建topic
     public void createTopic(String topicName) throws ExecutionException, InterruptedException {
         // 创建topic
-        NewTopic topic = new NewTopic(topicName, 3, (short) 2);
+        NewTopic topic = new NewTopic(topicName, 2, (short) 3);
         // 此方法是异步创建
         CreateTopicsResult createTopicsResult = adminClient.createTopics(Arrays.asList(topic));
         // 同步等待

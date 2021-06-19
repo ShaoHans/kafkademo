@@ -18,9 +18,10 @@ public class OffsetProducer {
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(props);
 
         ProducerRecord<String, String> record;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100000; i++) {
             record = new ProducerRecord<>("topic03", "key" + i, "value" + i);
             producer.send(record);
+            System.out.println(record);
         }
 
         producer.close();
